@@ -1,6 +1,7 @@
 package com.example.minesweeper;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -14,7 +15,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -149,6 +149,14 @@ public class loadingPageActivity extends AppCompatActivity {
     }
 
     private void end_game(boolean isWinning){
+        if(!isWinning){
+            // Situation when the user click on a bomb
+            String msg = "You hit a bomb, sucker";
+            Intent intent = new Intent(this, resultPageActivity.class);
+            intent.putExtra("msg", msg);
+
+            startActivity(intent);
+        }
         isRunning=false;
     }
 
