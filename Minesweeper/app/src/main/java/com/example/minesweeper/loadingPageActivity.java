@@ -51,12 +51,14 @@ public class loadingPageActivity extends AppCompatActivity {
             isRunning = savedInstanceState.getBoolean("isRunning");
         }
         runTimer();
-        isRunning=false;
+
         // Here starts the construction of whole grid.
         // Randomly mark four cells objects as bomb
         // Whenever a bomb is placed, add one bomb_count on all 8 neighbours
         GridLayout grid = (GridLayout) findViewById(R.id.bomb_grid);
         LayoutInflater li = LayoutInflater.from(this);
+        TextView remain_flag = (TextView) findViewById(R.id.remain_flags);
+        remain_flag.setText(String.valueOf(FLAG_COUNT));
         //Use a 2D array to store the cell objects
         for (int i = 0; i<ROW_COUNT; i++) {
             for (int j=0; j<COLUMN_COUNT; j++) {
@@ -70,6 +72,7 @@ public class loadingPageActivity extends AppCompatActivity {
         // set click listener for the flag button
         Button flag = (Button) findViewById(R.id.flag_button);
         flag.setOnClickListener(this::onClickFlag);
+        flag.setBackgroundColor(Color.WHITE);
         // Inflate a list of TextView for manifest
         for (int i = 0; i<=9; i++) {
             for (int j=0; j<=7; j++) {
@@ -150,13 +153,17 @@ public class loadingPageActivity extends AppCompatActivity {
                 }
                 FLAG_COUNT++;
             }else{
-                // TODO: show a warning when user doesn't have a remaining flag but try to place one
-                // otherwise, put a flag on that cell
-                cur_cell.setFlagged();
-                tv.setText("\uD83D\uDEA9");
-                FLAG_COUNT--;
+                // TODO: try to show a warning when user doesn't have a remaining flag but try to place one
+                // otherwise, put a flag on that cell that's not revealed before
+                if(!check_visited.containsKey(new Pair<>(i,j)) && FLAG_COUNT !=0){
+                    cur_cell.setFlagged();
+                    tv.setText("\uD83D\uDEA9");
+                    FLAG_COUNT--;
+                }
             }
             flag_move=false;
+            TextView remain_flag = (TextView) findViewById(R.id.remain_flags);
+            remain_flag.setText(String.valueOf(FLAG_COUNT));
             return;
         }
 
@@ -191,9 +198,10 @@ public class loadingPageActivity extends AppCompatActivity {
 
     private void end_game(boolean isWinning){
         isRunning=false;
+        // TODO: add a play again button
         if(!isWinning){
             // Situation when the user click on a bomb
-            String msg = "You hit a bomb, sucker";
+            String msg = "You hit a bomb, Game Over";
             Intent intent = new Intent(this, resultPageActivity.class);
             intent.putExtra("msg", msg);
             startActivity(intent);
@@ -206,7 +214,6 @@ public class loadingPageActivity extends AppCompatActivity {
             intent.putExtra("msg", msg);
             startActivity(intent);
         }
-        isRunning=false;
     }
 
     private void reveal_all_blank(int i, int j, cell[][] grid_cells, TextView[][] tv_cells,
@@ -242,7 +249,7 @@ public class loadingPageActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-
+                isRunning = true;
                 int sec = clock;
                 String time = sec+"s";
                 tv.setText(time);
