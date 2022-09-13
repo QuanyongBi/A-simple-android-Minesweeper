@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
 
@@ -24,9 +25,12 @@ public class loadingPageActivity extends AppCompatActivity {
     private final int COLUMN_COUNT = 8;
     private final int ROW_COUNT = 10;
     private int BOMB_COUNT = 4;
+    private int FLAG_COUNT = 4;
+    private int REVEALED_CELL_COUNT = 0;
 
     private int clock = 0;
     private boolean isRunning = false;
+    private boolean flag_move = false;
 
     private int dpToPixel(int dp) {
         float density = Resources.getSystem().getDisplayMetrics().density;
@@ -34,8 +38,8 @@ public class loadingPageActivity extends AppCompatActivity {
     }
     private cell[][] grid_cells = new cell[ROW_COUNT][COLUMN_COUNT];
     private TextView[][] tv_cells = new TextView[ROW_COUNT][COLUMN_COUNT];
-    @Override
 
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         // Timer stuff
         super.onCreate(savedInstanceState);
@@ -62,6 +66,9 @@ public class loadingPageActivity extends AppCompatActivity {
         }
         bomb_initialize(grid_cells);
 
+        // set click listener for the flag button
+        Button flag = (Button) findViewById(R.id.flag_button);
+        flag.setOnClickListener(this::onClickFlag);
         // Inflate a list of TextView for manifest
         for (int i = 0; i<=9; i++) {
             for (int j=0; j<=7; j++) {
@@ -70,6 +77,7 @@ public class loadingPageActivity extends AppCompatActivity {
                 tv.setTextColor(Color.GREEN);
                 tv.setOnClickListener(this::onClickTV);
                 cell curCell = grid_cells[i][j];
+
                 if (curCell.is_bomb()){
                     tv.setBackgroundColor(Color.GREEN);
                 }else if(curCell.getBombCount() != 0){
@@ -129,32 +137,63 @@ public class loadingPageActivity extends AppCompatActivity {
         int i = n.first;
         int j = n.second;
         cell cur_cell = grid_cells[i][j];
+
+        // when the user is trying in flagging move
+        if(flag_move){
+            if(cur_cell.is_flagged()){
+                // when the target cell is flagged already, remove the flage and set textview to bombcount
+                cur_cell.setFlagged();
+                tv.setText("");
+                if(cur_cell.getBombCount()!=0){
+                    tv.setText(String.valueOf(cur_cell.getBombCount()));
+                }
+                FLAG_COUNT++;
+            }else{
+                // TODO: show a warning when user doesn't have a remaining flag but try to place one
+                // otherwise, put a flag on that cell
+                cur_cell.setFlagged();
+                tv.setText("\uD83D\uDEA9");
+                FLAG_COUNT--;
+            }
+            flag_move=false;
+            return;
+        }
+        // these are normal cases for user clicking on the cell
         if(cur_cell.is_bomb()){
+            // when user clicks on a bomb, show the bomb and go to result page
             tv.setBackgroundColor(Color.RED);
             tv.setText("\uD83D\uDCA3");
             end_game(false);
         }else if(cur_cell.getBombCount()==0){
-            // Use DFS to pop all neighbours and their neighbors
+            // When the user clicks on empty cell
+            // Use DFS to pop all empty neighbours and their empty neighbors
             Map<Pair<Integer,Integer>,Integer> check_visited = new HashMap<Pair<Integer,Integer>,Integer>();
             List<Pair<Integer,Integer>> to_pop = new ArrayList<Pair<Integer,Integer>>();
             reveal_all_blank(i,j,grid_cells,tv_cells,check_visited);
-            isRunning=true;
         }else{
             // scenario when just showing a number
             tv.setBackgroundColor(Color.GRAY);
             tv.setTextColor(Color.WHITE);
-            isRunning=true;
+            REVEALED_CELL_COUNT++;
         }
 
+        // when the clicking move is over, check if user wins
+        if(FLAG_COUNT ==0 && REVEALED_CELL_COUNT==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
+            end_game(true);
+        }
+    }
+
+    private void onClickFlag(View view){
+        flag_move = true;
     }
 
     private void end_game(boolean isWinning){
+        isRunning=false;
         if(!isWinning){
             // Situation when the user click on a bomb
             String msg = "You hit a bomb, sucker";
             Intent intent = new Intent(this, resultPageActivity.class);
             intent.putExtra("msg", msg);
-
             startActivity(intent);
         }
         isRunning=false;
@@ -168,10 +207,12 @@ public class loadingPageActivity extends AppCompatActivity {
         if(grid_cells[i][j].getBombCount()!=0) {
             tempTv.setBackgroundColor(Color.GRAY);
             tempTv.setTextColor(Color.WHITE);
+            REVEALED_CELL_COUNT++;
             return;
         }
         tempTv.setBackgroundColor(Color.GRAY);
         check_visited.put(n,0);
+        REVEALED_CELL_COUNT++;
         if(i>0) reveal_all_blank(i-1,j,grid_cells,tv_cells,check_visited);
         if(j>0) reveal_all_blank(i,j-1,grid_cells,tv_cells,check_visited);
         if(i<ROW_COUNT-1) reveal_all_blank(i+1,j,grid_cells,tv_cells,check_visited);
@@ -192,7 +233,7 @@ public class loadingPageActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                int sec = clock % 60;
+                int sec = clock;
                 String time = sec+"s";
                 tv.setText(time);
 
@@ -201,6 +242,5 @@ public class loadingPageActivity extends AppCompatActivity {
             }
         });
     }
-
 
 }

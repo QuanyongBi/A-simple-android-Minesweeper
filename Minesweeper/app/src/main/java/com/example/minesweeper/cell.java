@@ -17,5 +17,7 @@ public class cell {
     public void set_bomb(){isBomb = true; bombCount=0;}
     public boolean is_bomb(){return isBomb;}
     public int getBombCount(){return bombCount;}
+    public boolean is_flagged(){return isFlagged;}
+    public void setFlagged(){isFlagged = !isFlagged;}
 
 }
