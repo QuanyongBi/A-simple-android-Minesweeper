@@ -38,6 +38,7 @@ public class loadingPageActivity extends AppCompatActivity {
     }
     private cell[][] grid_cells = new cell[ROW_COUNT][COLUMN_COUNT];
     private TextView[][] tv_cells = new TextView[ROW_COUNT][COLUMN_COUNT];
+    Map<Pair<Integer,Integer>,Integer> check_visited = new HashMap<Pair<Integer,Integer>,Integer>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -158,27 +159,28 @@ public class loadingPageActivity extends AppCompatActivity {
             flag_move=false;
             return;
         }
+
         // these are normal cases for user clicking on the cell
         if(cur_cell.is_bomb()){
             // when user clicks on a bomb, show the bomb and go to result page
-            tv.setBackgroundColor(Color.RED);
-            tv.setText("\uD83D\uDCA3");
-            end_game(false);
+            // TODO: check if it's been flagged
+            if(!cur_cell.is_flagged()){
+                tv.setBackgroundColor(Color.RED);
+                tv.setText("\uD83D\uDCA3");
+                end_game(false);
+            }
         }else if(cur_cell.getBombCount()==0){
             // When the user clicks on empty cell
             // Use DFS to pop all empty neighbours and their empty neighbors
-            Map<Pair<Integer,Integer>,Integer> check_visited = new HashMap<Pair<Integer,Integer>,Integer>();
-            List<Pair<Integer,Integer>> to_pop = new ArrayList<Pair<Integer,Integer>>();
             reveal_all_blank(i,j,grid_cells,tv_cells,check_visited);
         }else{
             // scenario when just showing a number
             tv.setBackgroundColor(Color.GRAY);
             tv.setTextColor(Color.WHITE);
-            REVEALED_CELL_COUNT++;
+            check_visited.put(new Pair<>(i,j),0);
         }
-
         // when the clicking move is over, check if user wins
-        if(FLAG_COUNT ==0 && REVEALED_CELL_COUNT==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
+        if(FLAG_COUNT ==0 && check_visited.size()==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
             end_game(true);
         }
     }
@@ -195,6 +197,14 @@ public class loadingPageActivity extends AppCompatActivity {
             Intent intent = new Intent(this, resultPageActivity.class);
             intent.putExtra("msg", msg);
             startActivity(intent);
+        }else{
+            String msg = "";
+            msg += "you've found all bombs\n";
+            msg += "using " + clock +" seconds\n";
+            msg += "Good Job";
+            Intent intent = new Intent(this, resultPageActivity.class);
+            intent.putExtra("msg", msg);
+            startActivity(intent);
         }
         isRunning=false;
     }
@@ -204,15 +214,15 @@ public class loadingPageActivity extends AppCompatActivity {
         Pair<Integer,Integer> n = new Pair<>(i,j);
         if(check_visited.containsKey(n) || i<0 || i>=ROW_COUNT || j<0 || j>=COLUMN_COUNT) return;
         TextView tempTv = tv_cells[i][j];
+
         if(grid_cells[i][j].getBombCount()!=0) {
             tempTv.setBackgroundColor(Color.GRAY);
             tempTv.setTextColor(Color.WHITE);
-            REVEALED_CELL_COUNT++;
+            check_visited.put(n,0);
             return;
         }
         tempTv.setBackgroundColor(Color.GRAY);
         check_visited.put(n,0);
-        REVEALED_CELL_COUNT++;
         if(i>0) reveal_all_blank(i-1,j,grid_cells,tv_cells,check_visited);
         if(j>0) reveal_all_blank(i,j-1,grid_cells,tv_cells,check_visited);
         if(i<ROW_COUNT-1) reveal_all_blank(i+1,j,grid_cells,tv_cells,check_visited);
