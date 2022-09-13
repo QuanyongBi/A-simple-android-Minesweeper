@@ -12,7 +12,7 @@
         android:id="@+id/bomb_grid"
         android:layout_width="320dp"
         android:layout_height="400dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="140dp"
         android:columnCount="8"
         android:rowCount="10"
         app:layout_constraintBaseline_toBottomOf="parent"
@@ -33,10 +33,10 @@
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.867"
+        app:layout_constraintHorizontal_bias="0.832"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.075" />
+        app:layout_constraintVertical_bias="0.118" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

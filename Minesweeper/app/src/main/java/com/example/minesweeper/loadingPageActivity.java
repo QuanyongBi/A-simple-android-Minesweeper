@@ -40,10 +40,13 @@ public class loadingPageActivity extends AppCompatActivity {
         // Timer stuff
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_page);
+
         if(savedInstanceState != null){
             clock = savedInstanceState.getInt("clock");
             isRunning = savedInstanceState.getBoolean("isRunning");
         }
+        runTimer();
+        isRunning=false;
         // Here starts the construction of whole grid.
         // Randomly mark four cells objects as bomb
         // Whenever a bomb is placed, add one bomb_count on all 8 neighbours
@@ -65,7 +68,6 @@ public class loadingPageActivity extends AppCompatActivity {
                 TextView tv = (TextView) li.inflate(R.layout.cell_layout, grid, false);
                 tv.setBackgroundColor(Color.GREEN);
                 tv.setTextColor(Color.GREEN);
-
                 tv.setOnClickListener(this::onClickTV);
                 cell curCell = grid_cells[i][j];
                 if (curCell.is_bomb()){
@@ -122,30 +124,32 @@ public class loadingPageActivity extends AppCompatActivity {
 
     public void onClickTV(View view){
         // this is when the user actually click on that grid
-        if(!isRunning) runTimer();
         TextView tv = (TextView) view;
         Pair<Integer,Integer> n = findIndexOfCellTextView(tv);
         int i = n.first;
         int j = n.second;
         cell cur_cell = grid_cells[i][j];
-
         if(cur_cell.is_bomb()){
-            // TODO: a function for cliking on a bomb
-            tv.setBackgroundColor(Color.GRAY);
+            tv.setBackgroundColor(Color.RED);
             tv.setText("\uD83D\uDCA3");
-            isRunning = false;
+            end_game(false);
         }else if(cur_cell.getBombCount()==0){
-            // TODO: a function to review as many empty grid as possible
             // Use DFS to pop all neighbours and their neighbors
             Map<Pair<Integer,Integer>,Integer> check_visited = new HashMap<Pair<Integer,Integer>,Integer>();
             List<Pair<Integer,Integer>> to_pop = new ArrayList<Pair<Integer,Integer>>();
             reveal_all_blank(i,j,grid_cells,tv_cells,check_visited);
+            isRunning=true;
         }else{
             // scenario when just showing a number
             tv.setBackgroundColor(Color.GRAY);
             tv.setTextColor(Color.WHITE);
+            isRunning=true;
         }
-        isRunning = true;
+
+    }
+
+    private void end_game(boolean isWinning){
+        isRunning=false;
     }
 
     private void reveal_all_blank(int i, int j, cell[][] grid_cells, TextView[][] tv_cells,
@@ -179,6 +183,7 @@ public class loadingPageActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
+
                 int sec = clock % 60;
                 String time = sec+"s";
                 tv.setText(time);
