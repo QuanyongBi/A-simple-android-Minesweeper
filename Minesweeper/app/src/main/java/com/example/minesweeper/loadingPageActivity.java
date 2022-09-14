@@ -30,6 +30,8 @@ public class loadingPageActivity extends AppCompatActivity {
 
     private int clock = 0;
     private boolean isRunning = false;
+    private boolean is_ending = false;
+    private boolean is_winning = false;
     private boolean flag_move = false;
 
     private int dpToPixel(int dp) {
@@ -135,6 +137,11 @@ public class loadingPageActivity extends AppCompatActivity {
     }
 
     public void onClickTV(View view){
+        // if last click gets a result, this click will lead to result page
+        if(is_ending){
+            end_game(is_winning);
+        }
+
         // this is when the user actually click on that grid
         TextView tv = (TextView) view;
         Pair<Integer,Integer> n = findIndexOfCellTextView(tv);
@@ -161,7 +168,6 @@ public class loadingPageActivity extends AppCompatActivity {
                     FLAG_COUNT--;
                 }
             }
-            flag_move=false;
             TextView remain_flag = (TextView) findViewById(R.id.remain_flags);
             remain_flag.setText(String.valueOf(FLAG_COUNT));
             return;
@@ -174,7 +180,8 @@ public class loadingPageActivity extends AppCompatActivity {
             if(!cur_cell.is_flagged()){
                 tv.setBackgroundColor(Color.RED);
                 tv.setText("\uD83D\uDCA3");
-                end_game(false);
+                isRunning = false;
+                is_ending = true;
             }
         }else if(cur_cell.getBombCount()==0){
             // When the user clicks on empty cell
@@ -188,12 +195,20 @@ public class loadingPageActivity extends AppCompatActivity {
         }
         // when the clicking move is over, check if user wins
         if(FLAG_COUNT ==0 && check_visited.size()==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
-            end_game(true);
+            is_ending = true;
+            isRunning = false;
+            is_winning = true;
         }
     }
 
     private void onClickFlag(View view){
-        flag_move = true;
+        TextView mode_button = (TextView) findViewById(R.id.flag_button);
+        if(flag_move){
+            mode_button.setText("⛏");
+        }else{
+            mode_button.setText("\uD83D\uDEA9");
+        }
+        flag_move = !flag_move;
     }
 
     private void end_game(boolean isWinning){
