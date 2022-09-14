@@ -1,3 +1,8 @@
-<resources>
-    <string name="app_name">Minesweeper</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">CSCI310 Quanyong Bi</string>
+    <string name="mine">💣</string>
+    <string name="pick">⛏️</string>
+    <string name="flag">🚩</string>
+    <string name="time">⏳</string>
+    <string name="return_button">play again</string>
 </resources>

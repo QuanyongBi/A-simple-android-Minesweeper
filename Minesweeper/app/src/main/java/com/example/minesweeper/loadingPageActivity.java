@@ -152,7 +152,7 @@ public class loadingPageActivity extends AppCompatActivity {
         // when the user is trying in flagging move
         if(flag_move){
             if(cur_cell.is_flagged()){
-                // when the target cell is flagged already, remove the flage and set textview to bombcount
+                // when the target cell is flagged already, remove the flag and set textview to bombcount
                 cur_cell.setFlagged();
                 tv.setText("");
                 if(cur_cell.getBombCount()!=0){
@@ -179,7 +179,7 @@ public class loadingPageActivity extends AppCompatActivity {
             // TODO: check if it's been flagged
             if(!cur_cell.is_flagged()){
                 tv.setBackgroundColor(Color.RED);
-                tv.setText("\uD83D\uDCA3");
+                tv.setText(R.string.mine);
                 isRunning = false;
                 is_ending = true;
             }
@@ -204,9 +204,9 @@ public class loadingPageActivity extends AppCompatActivity {
     private void onClickFlag(View view){
         TextView mode_button = (TextView) findViewById(R.id.flag_button);
         if(flag_move){
-            mode_button.setText("⛏");
+            mode_button.setText(R.string.pick);
         }else{
-            mode_button.setText("\uD83D\uDEA9");
+            mode_button.setText(R.string.flag);
         }
         flag_move = !flag_move;
     }
