@@ -5,4 +5,5 @@
     <string name="flag">🚩</string>
     <string name="time">⏳</string>
     <string name="return_button">play again</string>
+    <string name="ending_text">game over. Click any botton to ending page</string>
 </resources>

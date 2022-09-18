@@ -48,11 +48,12 @@ public class loadingPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_page);
 
-        if(savedInstanceState != null){
-            clock = savedInstanceState.getInt("clock");
-            isRunning = savedInstanceState.getBoolean("isRunning");
-        }
-        runTimer();
+        //TODO: timer bug probably all because not updating bundle
+//        if(savedInstanceState != null){
+//            clock = savedInstanceState.getInt("clock");
+//            isRunning = savedInstanceState.getBoolean("isRunning");
+//        }
+
 
         // Here starts the construction of whole grid.
         // Randomly mark four cells objects as bomb
@@ -137,12 +138,16 @@ public class loadingPageActivity extends AppCompatActivity {
     }
 
     public void onClickTV(View view){
+
         // if last click gets a result, this click will lead to result page
         if(is_ending){
             end_game(is_winning);
+            return;
         }
+        // only start timer when a user clicks the first cell
+        if(!isRunning && !is_ending) runTimer();
 
-        // this is when the user actually click on that grid
+        // map the cell with the textview
         TextView tv = (TextView) view;
         Pair<Integer,Integer> n = findIndexOfCellTextView(tv);
         int i = n.first;
@@ -152,15 +157,11 @@ public class loadingPageActivity extends AppCompatActivity {
         // when the user is trying in flagging move
         if(flag_move){
             if(cur_cell.is_flagged()){
-                // when the target cell is flagged already, remove the flag and set textview to bombcount
+                // when the target cell is flagged already, remove the flag
                 cur_cell.setFlagged();
                 tv.setText("");
-                if(cur_cell.getBombCount()!=0){
-                    tv.setText(String.valueOf(cur_cell.getBombCount()));
-                }
                 FLAG_COUNT++;
             }else{
-                // TODO: try to show a warning when user doesn't have a remaining flag but try to place one
                 // otherwise, put a flag on that cell that's not revealed before
                 if(!check_visited.containsKey(new Pair<>(i,j)) && FLAG_COUNT !=0){
                     cur_cell.setFlagged();
@@ -170,19 +171,27 @@ public class loadingPageActivity extends AppCompatActivity {
             }
             TextView remain_flag = (TextView) findViewById(R.id.remain_flags);
             remain_flag.setText(String.valueOf(FLAG_COUNT));
+            // check if this last flag move results in victory (a sneaky bug QAQ)
+            if(FLAG_COUNT ==0 && check_visited.size()==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
+                is_ending = true;
+                isRunning = false;
+                is_winning = true;
+                set_ending_warning();
+            }
             return;
         }
 
         // these are normal cases for user clicking on the cell
         if(cur_cell.is_bomb()){
             // when user clicks on a bomb, show the bomb and go to result page
-            // TODO: check if it's been flagged
             if(!cur_cell.is_flagged()){
                 tv.setBackgroundColor(Color.RED);
                 tv.setText(R.string.mine);
                 isRunning = false;
                 is_ending = true;
+                set_ending_warning();
             }
+            //else if it's flagged, do nothing :3
         }else if(cur_cell.getBombCount()==0){
             // When the user clicks on empty cell
             // Use DFS to pop all empty neighbours and their empty neighbors
@@ -198,7 +207,15 @@ public class loadingPageActivity extends AppCompatActivity {
             is_ending = true;
             isRunning = false;
             is_winning = true;
+            set_ending_warning();
         }
+
+    }
+
+    private void set_ending_warning(){
+        TextView tv = (TextView) findViewById(R.id.ending_warning);
+        tv.setText(R.string.ending_text);
+        tv.setTextColor(Color.RED);
     }
 
     private void onClickFlag(View view){
@@ -213,6 +230,7 @@ public class loadingPageActivity extends AppCompatActivity {
 
     private void end_game(boolean isWinning){
         isRunning=false;
+
         // TODO: add a play again button
         if(!isWinning){
             // Situation when the user click on a bomb
@@ -249,6 +267,12 @@ public class loadingPageActivity extends AppCompatActivity {
         if(j>0) reveal_all_blank(i,j-1,grid_cells,tv_cells,check_visited);
         if(i<ROW_COUNT-1) reveal_all_blank(i+1,j,grid_cells,tv_cells,check_visited);
         if(j<COLUMN_COUNT-1) reveal_all_blank(i,j+1,grid_cells,tv_cells,check_visited);
+
+        // TODO: verify if we need to reveal corner neibour for blank cell
+        if(i>0 && j>0) reveal_all_blank(i-1,j-1,grid_cells,tv_cells,check_visited);
+        if(i>0 && j<COLUMN_COUNT-1) reveal_all_blank(i-1,j+1,grid_cells,tv_cells,check_visited);
+        if(i<ROW_COUNT-1 && j>0) reveal_all_blank(i+1,j-1,grid_cells,tv_cells,check_visited);
+        if(i<ROW_COUNT-1 && j<COLUMN_COUNT-1) reveal_all_blank(i+1,j+1,grid_cells,tv_cells,check_visited);
     }
 
     public void onSaveInstanceStates(Bundle savedInstanceState){
@@ -264,12 +288,12 @@ public class loadingPageActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                isRunning = true;
+                if(!isRunning) isRunning = true;
                 int sec = clock;
                 String time = sec+"s";
                 tv.setText(time);
 
-                if(isRunning) clock++;
+                if(isRunning&&!is_ending) clock++;
                 handler.postDelayed(this,1000);
             }
         });
