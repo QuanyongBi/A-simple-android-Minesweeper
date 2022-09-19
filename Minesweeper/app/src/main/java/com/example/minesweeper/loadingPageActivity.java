@@ -159,11 +159,16 @@ public class loadingPageActivity extends AppCompatActivity {
             if(cur_cell.is_flagged()){
                 // when the target cell is flagged already, remove the flag
                 cur_cell.setFlagged();
-                tv.setText("");
+                if(cur_cell.getBombCount()!=0) {
+                    tv.setText(String.valueOf(cur_cell.getBombCount()));
+                    tv.setTextColor(Color.GREEN);
+                }else {
+                    tv.setText("");
+                }
                 FLAG_COUNT++;
             }else{
                 // otherwise, put a flag on that cell that's not revealed before
-                if(!check_visited.containsKey(new Pair<>(i,j)) && FLAG_COUNT !=0){
+                if(!check_visited.containsKey(new Pair<>(i,j))){
                     cur_cell.setFlagged();
                     tv.setText("\uD83D\uDEA9");
                     FLAG_COUNT--;
@@ -187,27 +192,37 @@ public class loadingPageActivity extends AppCompatActivity {
             if(!cur_cell.is_flagged()){
                 tv.setBackgroundColor(Color.RED);
                 tv.setText(R.string.mine);
+                reveal_all_bomb();
                 isRunning = false;
                 is_ending = true;
-                set_ending_warning();
+//                set_ending_warning();
             }
             //else if it's flagged, do nothing :3
+
         }else if(cur_cell.getBombCount()==0){
-            // When the user clicks on empty cell
-            // Use DFS to pop all empty neighbours and their empty neighbors
-            reveal_all_blank(i,j,grid_cells,tv_cells,check_visited);
-        }else{
+
+            if(!cur_cell.is_flagged()) {
+                // When the user clicks on empty cell
+                // Use DFS to pop all empty neighbours and their empty neighbors
+                tv.setBackgroundColor(Color.GRAY);
+                reveal_all_blank(i, j, grid_cells, tv_cells, check_visited);
+                TextView flag = (TextView) findViewById(R.id.remain_flags);
+                flag.setText(String.valueOf(FLAG_COUNT));
+            }
+        }else if(cur_cell.getBombCount()!=0){
             // scenario when just showing a number
-            tv.setBackgroundColor(Color.GRAY);
-            tv.setTextColor(Color.WHITE);
-            check_visited.put(new Pair<>(i,j),0);
+            if(!cur_cell.is_flagged()) {
+                tv.setBackgroundColor(Color.GRAY);
+                tv.setTextColor(Color.WHITE);
+                check_visited.put(new Pair<>(i, j), 0);
+            }
         }
         // when the clicking move is over, check if user wins
         if(FLAG_COUNT ==0 && check_visited.size()==COLUMN_COUNT*ROW_COUNT-BOMB_COUNT){
             is_ending = true;
             isRunning = false;
             is_winning = true;
-            set_ending_warning();
+//            set_ending_warning();
         }
 
     }
@@ -254,14 +269,27 @@ public class loadingPageActivity extends AppCompatActivity {
         Pair<Integer,Integer> n = new Pair<>(i,j);
         if(check_visited.containsKey(n) || i<0 || i>=ROW_COUNT || j<0 || j>=COLUMN_COUNT) return;
         TextView tempTv = tv_cells[i][j];
+        cell curCell = grid_cells[i][j];
 
-        if(grid_cells[i][j].getBombCount()!=0) {
+        if(curCell.getBombCount()!=0) {
+            if(curCell.is_flagged()){
+                FLAG_COUNT++;
+                curCell.setFlagged();
+            }
             tempTv.setBackgroundColor(Color.GRAY);
             tempTv.setTextColor(Color.WHITE);
+            tempTv.setText(String.valueOf(curCell.getBombCount()));
             check_visited.put(n,0);
             return;
         }
         tempTv.setBackgroundColor(Color.GRAY);
+        tempTv.setText("");
+        tempTv.setTextColor(Color.WHITE);
+        if(curCell.is_flagged()) {
+            FLAG_COUNT++;
+            curCell.setFlagged();
+        }
+
         check_visited.put(n,0);
         if(i>0) reveal_all_blank(i-1,j,grid_cells,tv_cells,check_visited);
         if(j>0) reveal_all_blank(i,j-1,grid_cells,tv_cells,check_visited);
@@ -279,6 +307,17 @@ public class loadingPageActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putInt("clock",clock);
         savedInstanceState.putBoolean("isRunning",isRunning);
+    }
+
+    private void reveal_all_bomb(){
+        for(int i=0; i<grid_cells.length; i++){
+            for(int j=0; j<grid_cells[0].length;j++){
+                if(grid_cells[i][j].is_bomb()){
+                    tv_cells[i][j].setBackgroundColor(Color.RED);
+                    tv_cells[i][j].setText(R.string.mine);
+                }
+            }
+        }
     }
 
     private void runTimer(){
