@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/cell_layout.xml" value="0.18568840579710144" />
+        <entry key="app/src/main/res/layout/landing_page.xml" value="0.15" />
         <entry key="app/src/main/res/layout/loading_page.xml" value="0.30891876220703124" />
         <entry key="app/src/main/res/layout/result_page.xml" value="0.15070921985815602" />
         <entry key="app/src/main/res/layout/success_page.xml" value="0.31476449275362317" />

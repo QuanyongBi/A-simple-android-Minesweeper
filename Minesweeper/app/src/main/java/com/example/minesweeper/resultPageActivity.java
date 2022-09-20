@@ -24,7 +24,7 @@ public class resultPageActivity extends AppCompatActivity {
     }
 
     public void onClickReturn (View view){
-        Intent intent = new Intent(this, loadingPageActivity.class);
+        Intent intent = new Intent(this, landingPageActivity.class);
         startActivity(intent);
     }
 }

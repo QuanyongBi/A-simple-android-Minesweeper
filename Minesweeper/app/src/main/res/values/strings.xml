@@ -5,5 +5,6 @@
     <string name="flag">🚩</string>
     <string name="time">⏳</string>
     <string name="return_button">play again</string>
-    <string name="ending_text">game over. Click any botton to ending page</string>
+    <string name="winning_ending_text">You Win. Click any cell to result page.</string>
+    <string name="losing_ending_text">You Win. Click any cell to result page</string>
 </resources>

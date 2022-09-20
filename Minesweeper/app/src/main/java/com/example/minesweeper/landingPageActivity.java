@@ -1,10 +1,8 @@
 package com.example.minesweeper;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Pair;
@@ -16,12 +14,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class loadingPageActivity extends AppCompatActivity {
+public class landingPageActivity extends AppCompatActivity {
     private final int COLUMN_COUNT = 8;
     private final int ROW_COUNT = 10;
     private int BOMB_COUNT = 4;
@@ -46,7 +42,7 @@ public class loadingPageActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Timer stuff
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.loading_page);
+        setContentView(R.layout.landing_page);
 
         //TODO: timer bug probably all because not updating bundle
 //        if(savedInstanceState != null){
@@ -195,7 +191,7 @@ public class loadingPageActivity extends AppCompatActivity {
                 reveal_all_bomb();
                 isRunning = false;
                 is_ending = true;
-//                set_ending_warning();
+                set_ending_warning();
             }
             //else if it's flagged, do nothing :3
 
@@ -222,15 +218,19 @@ public class loadingPageActivity extends AppCompatActivity {
             is_ending = true;
             isRunning = false;
             is_winning = true;
-//            set_ending_warning();
+            set_ending_warning();
         }
 
     }
 
     private void set_ending_warning(){
         TextView tv = (TextView) findViewById(R.id.ending_warning);
-        tv.setText(R.string.ending_text);
-        tv.setTextColor(Color.RED);
+        if(is_winning){
+            tv.setText(R.string.winning_ending_text);
+        }else{
+            tv.setText(R.string.losing_ending_text);
+        }
+        tv.setTextColor(Color.GRAY);
     }
 
     private void onClickFlag(View view){
